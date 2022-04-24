@@ -2,9 +2,11 @@ import asyncio
 import curses
 import random
 import time
+from contextlib import suppress
+import itertools
 from typing import Coroutine, Union, Any, Iterable
 
-from animations import load_starship_animations
+from animations import load_starship_frames
 from constants import TIC_TIMEOUT, BORDER_OFFSET, STAR_SYMBOLS
 from utils import get_frame_size, read_controls, draw_frame
 
@@ -68,35 +70,33 @@ async def blink(
     canvas.addstr(row, column, symbol, initial_display_option)
     await sleep(initial_blink_delay)
 
-    while True:
-        for blink_timeout, display_option in blinking_params:
-            canvas.addstr(row, column, symbol, display_option)
-            await sleep(blink_timeout)
+    for blink_timeout, display_option in itertools.cycle(blinking_params):
+        canvas.addstr(row, column, symbol, display_option)
+        await sleep(blink_timeout)
 
 
 async def animate_spaceship(
     canvas: curses.window,
     start_row: int,
     start_column: int,
-    starship_animations: Iterable[str],
+    starship_frames: Iterable[str],
 ) -> None:
     row, col = start_row, start_column
-    row_speed, col_speed = 10, 10
+    row_speed, col_speed = 3, 3
     row_min, col_min = BORDER_OFFSET, BORDER_OFFSET
     row_max, col_max = canvas.getmaxyx()
-    while True:
-        for starship_animation in starship_animations:
-            frame_row, frame_col = get_frame_size(starship_animation)
-            rows_dir, cols_dir, space_pressed = read_controls(canvas)
-            row = row + rows_dir * row_speed
-            col = col + cols_dir * col_speed
+    for starship_frame in starship_frames:
+        frame_row, frame_col = get_frame_size(starship_frame)
+        rows_dir, cols_dir, space_pressed = read_controls(canvas)
+        row = row + rows_dir * row_speed
+        col = col + cols_dir * col_speed
 
-            row = min(max(row, row_min), row_max - frame_row - BORDER_OFFSET)
-            col = min(max(col, col_min), col_max - frame_col - BORDER_OFFSET)
+        row = min(max(row, row_min), row_max - frame_row - BORDER_OFFSET)
+        col = min(max(col, col_min), col_max - frame_col - BORDER_OFFSET)
 
-            draw_frame(canvas, row, col, starship_animation)
-            await sleep()
-            draw_frame(canvas, row, col, starship_animation, negative=True)
+        draw_frame(canvas, row, col, starship_frame)
+        await sleep()
+        draw_frame(canvas, row, col, starship_frame, negative=True)
 
 
 def get_blink_coroutine(
@@ -109,7 +109,7 @@ def get_blink_coroutine(
     return blink(canvas, row, col, initial_blink_delay, symbol)
 
 
-def initial_setup(canvas: curses.window) -> None:
+def setup_canvas(canvas: curses.window) -> None:
     curses.curs_set(False)
     canvas.border()
     canvas.nodelay(True)
@@ -117,16 +117,16 @@ def initial_setup(canvas: curses.window) -> None:
 
 
 def draw(canvas: curses.window) -> None:
-    initial_setup(canvas)
+    setup_canvas(canvas)
 
     coroutines = []
     max_height, max_width = canvas.getmaxyx()
     row_center = max_height // 2
     col_center = max_width // 2
 
-    starship_animations = load_starship_animations()
+    starship_frames = load_starship_frames()
     coroutines.append(
-        animate_spaceship(canvas, row_center, col_center, starship_animations)
+        animate_spaceship(canvas, row_center, col_center, starship_frames)
     )
     coroutines.append(fire(canvas, row_center, col_center))
     for _ in range(random.randint(75, 150)):
@@ -143,8 +143,6 @@ def draw(canvas: curses.window) -> None:
 
 
 if __name__ == '__main__':
-    try:
-        curses.update_lines_cols()
+    curses.update_lines_cols()
+    with suppress(KeyboardInterrupt):
         curses.wrapper(draw)
-    except KeyboardInterrupt:
-        exit(0)
