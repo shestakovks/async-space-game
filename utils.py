@@ -1,5 +1,4 @@
 import curses
-from typing import Tuple, Union
 
 from constants import (
     UP_KEY_CODE,
@@ -10,7 +9,7 @@ from constants import (
 )
 
 
-def get_frame_size(text: str) -> Tuple[int, int]:
+def get_frame_size(text: str) -> tuple[int, int]:
     """Calculate size of multiline text fragment,
     return pair — number of rows and columns."""
 
@@ -20,7 +19,7 @@ def get_frame_size(text: str) -> Tuple[int, int]:
     return rows, columns
 
 
-def read_controls(canvas: curses.window) -> Tuple[int, int, bool]:
+def read_controls(canvas: curses.window) -> tuple[int, int, bool]:
     """Read keys pressed and returns tuple with controls state."""
 
     rows_direction = columns_direction = 0
@@ -53,8 +52,8 @@ def read_controls(canvas: curses.window) -> Tuple[int, int, bool]:
 
 def draw_frame(
     canvas: curses.window,
-    start_row: Union[int, float],
-    start_column: Union[int, float],
+    start_row: int | float,
+    start_column: int | float,
     text: str,
     negative: bool = False,
 ) -> None:

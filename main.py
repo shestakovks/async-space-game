@@ -1,10 +1,10 @@
 import asyncio
 import curses
+import itertools
 import random
 import time
 from contextlib import suppress
-import itertools
-from typing import Coroutine, Union, Any, Iterable
+from typing import Coroutine, Any, Iterable
 
 from animations import load_starship_frames
 from constants import TIC_TIMEOUT, BORDER_OFFSET, STAR_SYMBOLS
@@ -18,10 +18,10 @@ async def sleep(counter: int = 1) -> None:
 
 async def fire(
     canvas: curses.window,
-    start_row: Union[int, float],
-    start_column: Union[int, float],
-    rows_speed: Union[int, float] = -0.3,
-    columns_speed: Union[int, float] = 0,
+    start_row: int | float,
+    start_column: int | float,
+    rows_speed: int | float = -0.3,
+    columns_speed: int | float = 0,
 ) -> None:
     """Display animation of gun shot, direction and speed can be specified."""
 
