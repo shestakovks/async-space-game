@@ -6,6 +6,7 @@ from constants import (
     RIGHT_KEY_CODE,
     LEFT_KEY_CODE,
     SPACE_KEY_CODE,
+    BORDER_OFFSET,
 )
 
 
@@ -17,6 +18,13 @@ def get_frame_size(text: str) -> tuple[int, int]:
     rows = len(lines)
     columns = max([len(line) for line in lines])
     return rows, columns
+
+
+def get_canvas_borders(canvas: curses.window) -> tuple[int, int, int, int]:
+    """Returns coordinates of canvas borders in order:
+    row_min, row_max, col_min, col_max."""
+    rows, cols = canvas.getmaxyx()
+    return BORDER_OFFSET, rows - BORDER_OFFSET, BORDER_OFFSET, cols - BORDER_OFFSET
 
 
 def read_controls(canvas: curses.window) -> tuple[int, int, bool]:
