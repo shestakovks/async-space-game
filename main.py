@@ -109,10 +109,10 @@ async def blink(
     canvas: curses.window, row: int, col: int, symbol: str, initial_blink_delay: int,
 ) -> None:
     blinking_params = [
-        (int(2 / TIC_TIMEOUT), curses.A_DIM),
-        (int(0.3 / TIC_TIMEOUT), curses.A_NORMAL),
-        (int(0.5 / TIC_TIMEOUT), curses.A_BOLD),
-        (int(0.3 / TIC_TIMEOUT), curses.A_NORMAL),
+        (round(2 / TIC_TIMEOUT), curses.A_DIM),
+        (round(0.3 / TIC_TIMEOUT), curses.A_NORMAL),
+        (round(0.5 / TIC_TIMEOUT), curses.A_BOLD),
+        (round(0.3 / TIC_TIMEOUT), curses.A_NORMAL),
     ]
 
     _, initial_display_option = blinking_params[0]
