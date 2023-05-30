@@ -1,5 +1,9 @@
 import itertools
+import os.path
+from os import listdir
 from typing import Iterable
+
+from constants import GARBAGE_DIR
 
 
 def load_spaceship_frames() -> Iterable[str]:
@@ -16,17 +20,11 @@ def load_spaceship_frames() -> Iterable[str]:
 
 
 def load_garbage_frames() -> list[str]:
-    garbage_frame_files = [
-        'animations/trash_small.txt',
-        'animations/trash_large.txt',
-        'animations/trash_x1.txt',
-        'animations/duck.txt',
-        'animations/hubble.txt',
-        'animations/lamp.txt',
-    ]
+    garbage_frame_files = [os.path.join(GARBAGE_DIR, f) for f in listdir(GARBAGE_DIR)]
     frames = []
-    for path in garbage_frame_files:
-        with open(path) as f:
-            garbage_frame = f.read()
-            frames.append(garbage_frame)
+
+    for garbage_frame_file in garbage_frame_files:
+        with open(garbage_frame_file) as f:
+            frames.append(f.read())
+
     return frames
