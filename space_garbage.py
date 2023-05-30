@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 from obstacles import Obstacle
 from utils import draw_frame, get_frame_size
 
-OBSTACLES = []
-OBSTACLES_IN_LAST_COLLISION: list[Obstacle] = []
+obstacles = []
+obstacles_in_last_collision: list[Obstacle] = []
 
 if TYPE_CHECKING:
     import curses
@@ -28,12 +28,12 @@ async def fly_garbage(
 
     rows_size, columns_size = get_frame_size(garbage_frame)
     obstacle = Obstacle(round(row), column, rows_size, columns_size)
-    OBSTACLES.append(obstacle)
+    obstacles.append(obstacle)
 
     try:
         while row < rows_number:
-            if obstacle in OBSTACLES_IN_LAST_COLLISION:
-                OBSTACLES_IN_LAST_COLLISION.remove(obstacle)
+            if obstacle in obstacles_in_last_collision:
+                obstacles_in_last_collision.remove(obstacle)
                 break
 
             draw_frame(canvas, row, column, garbage_frame)
@@ -42,4 +42,4 @@ async def fly_garbage(
             row += speed
             obstacle.row = round(row)
     finally:
-        OBSTACLES.remove(obstacle)
+        obstacles.remove(obstacle)

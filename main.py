@@ -19,11 +19,11 @@ from explosion import explode
 from game_over import GAME_OVER_FRAME
 from game_scenario import get_garbage_delay_tics, PHRASES
 from physics import update_speed
-from space_garbage import fly_garbage, OBSTACLES, OBSTACLES_IN_LAST_COLLISION
+from space_garbage import fly_garbage, obstacles, obstacles_in_last_collision
 from utils import get_frame_size, read_controls, draw_frame, get_canvas_borders
 
-COROUTINES = []
-YEAR = 1957
+coroutines = []
+year = 1957
 
 
 async def sleep(counter: int = 1) -> None:
@@ -81,10 +81,10 @@ async def animate_fire(
     row_min, row_max, col_min, col_max = get_canvas_borders(canvas)
     while row_min < row < row_max and col_min < col < col_max:
 
-        for obstacle in OBSTACLES:
+        for obstacle in obstacles:
             if obstacle.has_collision(round(row), round(col)):
-                OBSTACLES_IN_LAST_COLLISION.append(obstacle)
-                COROUTINES.append(explode(canvas, row, col))
+                obstacles_in_last_collision.append(obstacle)
+                coroutines.append(explode(canvas, row, col))
                 return
 
         draw_frame(canvas, row, col, symbol)
@@ -150,7 +150,7 @@ async def animate_spaceship(
     row_min, row_max, col_min, col_max = get_canvas_borders(canvas)
     for starship_frame in spaceship_frames:
 
-        for obstacle in OBSTACLES:
+        for obstacle in obstacles:
             if obstacle.has_collision(round(row), round(col)):
                 await show_game_over(canvas)
                 return
@@ -166,8 +166,8 @@ async def animate_spaceship(
         row = min(max(row, row_min), row_max - frame_row)
         col = min(max(col, col_min), col_max - frame_col)
 
-        if space_pressed and YEAR >= GUN_AVAILABLE_YEAR:
-            COROUTINES.append(fire(canvas, row, col + 2))
+        if space_pressed and year >= GUN_AVAILABLE_YEAR:
+            coroutines.append(fire(canvas, row, col + 2))
 
         draw_frame(canvas, row, col, starship_frame)
         await sleep()
@@ -185,26 +185,26 @@ async def add_garbage_to_space(
     canvas: curses.window, col_min: int, col_max: int, garbage_frames: list[str],
 ) -> None:
     while True:
-        if (garbage_delay_ticks := get_garbage_delay_tics(YEAR)) is None:
+        if (garbage_delay_ticks := get_garbage_delay_tics(year)) is None:
             await sleep()
             continue
 
         col = random.randint(col_min, col_max)
         garbage_frame = random.choice(garbage_frames)
-        COROUTINES.append(fly_garbage(canvas, col, garbage_frame))
+        coroutines.append(fly_garbage(canvas, col, garbage_frame))
         await sleep(garbage_delay_ticks)
 
 
 async def show_year(year_block: curses.window) -> None:
-    global YEAR
+    global year
     while True:
         year_block.addstr(
             BORDER_OFFSET,
-            YEAR_BLOCK_WIDTH - len(str(YEAR)) - BORDER_OFFSET,
-            str(YEAR),
+            YEAR_BLOCK_WIDTH - len(str(year)) - BORDER_OFFSET,
+            str(year),
             curses.A_BOLD,
         )
-        if (phrase := PHRASES.get(YEAR)) is not None:
+        if (phrase := PHRASES.get(year)) is not None:
             draw_frame(
                 year_block,
                 BORDER_OFFSET * 2,
@@ -220,7 +220,7 @@ async def show_year(year_block: curses.window) -> None:
                 phrase,
                 negative=True,
             )
-        YEAR += 1
+        year += 1
 
 
 def setup_canvas(canvas: curses.window) -> None:
@@ -259,20 +259,20 @@ def draw(canvas: curses.window) -> None:
 
     year_block = create_year_block(canvas)
 
-    COROUTINES.append(show_year(year_block))
-    COROUTINES.append(
+    coroutines.append(show_year(year_block))
+    coroutines.append(
         draw_spaceship(canvas, row_center, col_center, spaceship_frames),
     )
-    COROUTINES.append(fill_orbit_with_garbage(canvas, garbage_frames))
+    coroutines.append(fill_orbit_with_garbage(canvas, garbage_frames))
     for _ in range(random.randint(75, 150)):
-        COROUTINES.append(blink(canvas))
+        coroutines.append(blink(canvas))
 
     while True:
-        for coroutine in COROUTINES.copy():
+        for coroutine in coroutines.copy():
             try:
                 coroutine.send(None)
             except StopIteration:
-                COROUTINES.remove(coroutine)
+                coroutines.remove(coroutine)
         canvas.refresh()
         time.sleep(TIC_TIMEOUT)
 
