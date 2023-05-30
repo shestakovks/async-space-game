@@ -94,14 +94,20 @@ async def animate_fire(
         col += col_speed
 
 
-async def blink(canvas: curses.window) -> None:
-    row_min, row_max, col_min, col_max = get_canvas_borders(canvas)
+async def fill_sky_with_stars(canvas: curses.window) -> None:
+    for _ in range(random.randint(75, 150)):
+        row_min, row_max, col_min, col_max = get_canvas_borders(canvas)
+        row = random.randint(row_min, row_max)
+        col = random.randint(col_min, col_max)
+        symbol = random.choice(STAR_SYMBOLS)
+        initial_blink_delay = random.randint(0, 30)
 
-    row = random.randint(row_min, row_max)
-    col = random.randint(col_min, col_max)
-    symbol = random.choice(STAR_SYMBOLS)
-    initial_blink_delay = random.randint(0, 30)
+        coroutines.append(blink(canvas, row, col, symbol, initial_blink_delay))
 
+
+async def blink(
+    canvas: curses.window, row: int, col: int, symbol: str, initial_blink_delay: int,
+) -> None:
     blinking_params = [
         (int(2 / TIC_TIMEOUT), curses.A_DIM),
         (int(0.3 / TIC_TIMEOUT), curses.A_NORMAL),
@@ -264,8 +270,7 @@ def draw(canvas: curses.window) -> None:
         draw_spaceship(canvas, row_center, col_center, spaceship_frames),
     )
     coroutines.append(fill_orbit_with_garbage(canvas, garbage_frames))
-    for _ in range(random.randint(75, 150)):
-        coroutines.append(blink(canvas))
+    coroutines.append(fill_sky_with_stars(canvas))
 
     while True:
         for coroutine in coroutines.copy():
